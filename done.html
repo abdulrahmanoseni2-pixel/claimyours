@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift Access System</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #89f7fe, #66a6ff, #ffecd2, #fcb69f);
+  background-size: 400% 400%;
+  animation: bgMove 10s ease infinite;
+  overflow-x: hidden;
+}
+
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* LOGIN + MAIN CONTAINER */
+.login, .container {
+  max-width: 450px;
+  margin: 70px auto;
+  padding: 25px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+  text-align: center;
+  color: #fff;
+}
+
+/* INPUTS */
+input, select {
+  width: 90%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.85);
+}
+
+/* FIXED GIFT SECTION SPACING */
+.section {
+  display: none;
+  margin-top: 20px;        /* ⬅ more space above */
+  padding: 15px;           /* ⬅ inner spacing fixed */
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  animation: fadeIn 0.4s ease;
+}
+
+/* INPUT SPACING INSIDE SECTION */
+.section input,
+.section select {
+  margin-top: 12px;        /* ⬅ prevents merging */
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* STATUS BOX */
+.status {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.85);
+  padding: 12px;
+  border-radius: 10px;
+  display: none;
+}
+
+/* ERROR */
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+/* FLOATING GIFTS */
+.gift {
+  position: absolute;
+  font-size: 26px;
+  animation: float 6s infinite ease-in-out;
+  opacity: 0.7;
+}
+
+.g1 { left: 10%; top: 15%; }
+.g2 { left: 80%; top: 25%; animation-delay: 1s; }
+.g3 { left: 50%; top: 80%; animation-delay: 2s; }
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-25px); }
+  100% { transform: translateY(0); }
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .login, .container {
+    margin: 30px 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- FLOATING GIFTS -->
+<div class="gift g1">🎁</div>
+<div class="gift g2">🎀</div>
+<div class="gift g3">🎉</div>
+
+<!-- LOGIN -->
+<div class="login" id="loginPage">
+  <h2>🔐 Verify Access</h2>
+
+  <input type="text" id="phone" placeholder="Phone Number">
+  <input type="email" id="email" placeholder="Email Address">
+
+  <button onclick="enterSite()">Continue</button>
+</div>
+
+<!-- GIFT SYSTEM -->
+<div class="container" id="giftPage" style="display:none;">
+
+  <h2>🎁 Gift System</h2>
+
+  <select id="giftType" onchange="showSection()">
+    <option value="">-- Select Gift Type --</option>
+    <option value="money">💰 Money</option>
+    <option value="giftcard">🎁 Gift Card</option>
+    <option value="bitcoin">₿ Bitcoin</option>
+  </select>
+
+  <!-- MONEY -->
+  <div id="money" class="section">
+    <input type="text" placeholder="Recipient Name">
+    <select>
+      <option>Cash App</option>
+      <option>PayPal</option>
+      <option>Zelle</option>
+      <option>Bank Transfer</option>
+    </select>
+    <input type="number" id="amount" placeholder="Amount ($1 - $200)">
+    <div class="error" id="error"></div>
+  </div>
+
+  <!-- GIFTCARD -->
+  <div id="giftcard" class="section">
+    <select>
+      <option>Amazon Gift Card</option>
+      <option>Apple iTunes</option>
+      <option>Google Play</option>
+      <option>Steam</option>
+    </select>
+    <input type="number" id="amount2" placeholder="Amount ($1 - $200)">
+    <div class="error" id="error2"></div>
+  </div>
+
+  <!-- BITCOIN -->
+  <div id="bitcoin" class="section">
+    <select>
+      <option>Bitcoin (BTC)</option>
+      <option>Ethereum (ETH)</option>
+      <option>USDT</option>
+    </select>
+    <input type="text" placeholder="Wallet Address">
+    <input type="number" id="amount3" placeholder="Amount ($1 - $200)">
+    <div class="error" id="error3"></div>
+  </div>
+
+  <button onclick="submitGift()">Submit Request</button>
+
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+
+// LOGIN
+function enterSite() {
+  let phone = document.getElementById("phone").value;
+  let email = document.getElementById("email").value;
+
+  if(phone === "" || email === "") {
+    alert("Please fill all fields");
+    return;
+  }
+
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("giftPage").style.display = "block";
+}
+
+// SHOW SECTION
+function showSection() {
+  let type = document.getElementById("giftType").value;
+
+  document.querySelectorAll(".section").forEach(s => {
+    s.style.display = "none";
+  });
+
+  if(type) document.getElementById(type).style.display = "block";
+}
+
+// VALIDATE AMOUNT
+function checkAmount(value, errorId) {
+  let error = document.getElementById(errorId);
+
+  if(value < 1 || value > 200 || value === "") {
+    error.innerText = "Amount must be between $1 and $200";
+    return false;
+  }
+
+  error.innerText = "";
+  return true;
+}
+
+// SUBMIT
+function submitGift() {
+  let type = document.getElementById("giftType").value;
+  let valid = false;
+
+  if(type === "money") {
+    valid = checkAmount(document.getElementById("amount").value, "error");
+  }
+
+  if(type === "giftcard") {
+    valid = checkAmount(document.getElementById("amount2").value, "error2");
+  }
+
+  if(type === "bitcoin") {
+    valid = checkAmount(document.getElementById("amount3").value, "error3");
+  }
+
+  if(!valid) return;
+
+  document.getElementById("status").style.display = "block";
+  document.getElementById("status").innerHTML =
+    "⏳ <b>Pending Approval</b><br><br>" +
+    "Your gift request has been received.<br>" +
+    "It will be processed once customer care approves it.<br><br>" +
+    "📱 Kindly stay tuned to your phone for updates.";
+}
+
+</script>
+
+</body>
+</html>
